@@ -1,6 +1,4 @@
 from __future__ import annotations
-import hashlib
-import hmac
 import io
 import os
 import time
@@ -20,40 +18,6 @@ MAX_VIDEO_FRAMES = 18000
 MAX_IMAGE_BYTES = 8 * 1024 * 1024
 
 st.set_page_config(page_title="Gym Form & Rep Tracker", page_icon="🏋️", layout="wide")
-
-
-def configured_password():
-    expected = os.environ.get("APP_PASSWORD", "").strip()
-    if expected:
-        return expected
-    try:
-        return str(st.secrets["app_password"]).strip()
-    except Exception:
-        return ""
-
-
-def require_login():
-    expected = configured_password()
-    if not expected:
-        st.error("App is locked. Configure APP_PASSWORD as an environment variable or app_password in Streamlit secrets before use.")
-        st.stop()
-    if len(expected) < 16:
-        st.error("Configured app password must be at least 16 characters. Update APP_PASSWORD or app_password in Streamlit secrets.")
-        st.stop()
-    if st.session_state.get("authenticated"):
-        return
-    st.title("Gym Form & Rep Tracker")
-    entered = st.text_input("App password", type="password")
-    if st.button("Sign in", type="primary"):
-        if hmac.compare_digest(hashlib.sha256(entered.encode()).digest(), hashlib.sha256(expected.encode()).digest()):
-            st.session_state["authenticated"] = True
-            st.rerun()
-        else:
-            st.error("Incorrect password.")
-    st.stop()
-
-
-require_login()
 
 @st.cache_resource(show_spinner="Loading the face model…")
 def get_face_app():
